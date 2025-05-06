@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lotomania App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+      font-size: 16px;
+      background-color: #f8f9fa;
+      touch-action: manipulation;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 15px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    h1, h2, h3 {
+      text-align: center;
+      font-size: 20px;
+      margin: 10px 0;
+      transition: color 0.3s;
+    }
+    h3 {
+      font-size: 16px;
+    }
+    .dezenas-container {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+      background-color: #f0f0f0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      min-height: 200px;
+    }
+    .dezena {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s;
+      user-select: none;
+      background-color: #fff;
+      color: #000; /* Cor do texto padrão para garantir visibilidade */
+    }
+    .dezena.selected {
+      background-color: #28a745;
+      color: white;
+    }
+    .dezena.highlight {
+      background-color: #ff4d4d;
+      border-color: #cc0000;
+      color: #fff;
+      cursor: pointer;
+    }
+    .dark-mode .dezena.highlight {
+      background-color: #cc3333;
+      border-color: #990000;
+      color: #fff;
+    }
+    .counter {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: bold;
+      color: #6c757d;
+      transition: color 0.3s;
+    }
+    .removed-dezenas {
+      text-align: center;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #dc3545;
+    }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      font-size: 14px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      color: white;
+      white-space: nowrap;
+      min-width: 80px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    button.reset { background-color: #dc3545; }
+    button.generate { background-color: #28a745; }
+    button.export { background-color: #ffc107; color: black; }
+    button.check { background-color: #17a2b8; }
+    button.stats { background-color: #fd7e14; }
+    button.suggest { background-color: #20c997; }
+    button.dark-mode-toggle { background-color: #6c757d; }
+    .result, .check-result, .stats-result {
+      margin-top: 20px;
+    }
+    .stats-result {
+      text-align: center;
+    }
+    .games {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .game {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex-wrap: wrap;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+    .game .number {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #FFD700;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    .stats-details {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding-bottom: 8px;
+    }
+    .stat {
+      font-size: 12px;
+      background: #e9ecef;
+      padding: 4px 8px;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+    .check-input-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+    .check-input {
+      padding: 8px;
+      font-size: 14px;
+      width: 80%;
+      max-width: 400px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      transition: background-color 0.3s, border-color 0.3s, color 0.3s;
+    }
+    .check-button {
+      padding: 8px 15px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .check-result {
+      margin-top: 20px;
+    }
+    .check-game {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: center;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      transition: border-color 0.3s;
+    }
+    .check-game .number {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #FFD700;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+    .check-game .match {
+      background-color: #28a745;
+      color: white;
+    }
+    .check-game .points {
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 5px;
+      width: 100%;
+      text-align: center;
+      transition: color 0.3s;
+    }
+    .stats-table {
+      margin: 20px auto;
+      max-width: 600px;
+      border-collapse: collapse;
+    }
+    .stats-table th, .stats-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: center;
+      font-size: 14px;
+      transition: background-color 0.3s, color 0.3s;
+    }
+    .stats-table th {
+      background-color: #f1f1f1;
+      font-weight: bold;
+    }
+    .dark-mode {
+      background-color: #222;
+      color: #fff;
+    }
+    .dark-mode .container {
+      background: #333;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    .dark-mode h1, .dark-mode h2, .dark-mode h3 {
+      color: #fff;
+    }
+    .dark-mode .dezenas-container {
+      background-color: #333;
+      border-color: #666;
+    }
+    .dark-mode .dezena {
+      background-color: #444;
+      border-color: #666;
+      color: #fff; /* Cor do texto no modo escuro para garantir visibilidade */
+    }
+    .dark-mode .dezena.selected {
+      background-color: #28a745;
+      color: white;
+    }
+    .dark-mode .counter {
+      color: #adb5bd;
+    }
+    .dark-mode .removed-dezenas {
+      color: #ff6b6b;
+    }
+    .dark-mode .game, .dark-mode .check-game {
+      border-color: #555;
+    }
+    .dark-mode .game .number, .dark-mode .check-game .number {
+      background-color: #d4a017;
+    }
+    .dark-mode .stats-details .stat {
+      background: #555;
+      color: #fff;
+    }
+    .dark-mode .check-input {
+      background-color: #444;
+      border-color: #666;
+      color: #fff;
+    }
+    .dark-mode button.export {
+      background-color: #e0a800;
+      color: #000;
+    }
+    .dark-mode .stats-table th {
+      background-color: #555;
+      color: #fff;
+    }
+    .dark-mode .stats-table td {
+      border-color: #666;
+      color: #fff;
+    }
+    @media (max-width: 480px) {
+      body {
+        padding: 5px;
+        font-size: 14px;
+      }
+      h1, h2 {
+        font-size: 18px;
+      }
+      h3 {
+        font-size: 14px;
+      }
+      .dezenas-container {
+        gap: 6px;
+      }
+      .dezena {
+        font-size: 12px;
+      }
+      button {
+        padding: 8px 12px;
+        font-size: 12px;
+        min-width: 70px;
+      }
+      .game .number, .check-game .number {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+      .stats-details {
+        gap: 6px;
+      }
+      .stat {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+      .check-input {
+        width: 90%;
+        font-size: 12px;
+      }
+      .check-button {
+        padding: 6px 10px;
+        font-size: 12px;
+        margin-left: 5px;
+      }
+      .check-game .points {
+        font-size: 10px;
+      }
+      .stats-table th, .stats-table td {
+        font-size: 12px;
+        padding: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gerador de Jogos Lotomania</h1>
+    <div class="counter">Números selecionados: <span id="counter">0</span>/70</div>
+    <div class="removed-dezenas" id="removedDezenas"></div>
+    <div class="dezenas-container" id="dezenasContainer"></div>
+    
+    <div class="buttons">
+      <button class="reset" onclick="resetSelection()">Resetar</button>
+      <button class="generate" onclick="generateGames()">Gerar Jogos</button>
+      <button class="export" onclick="exportGames()">Exportar TXT</button>
+      <button class="export" onclick="exportGamesToCSV()">Exportar CSV</button>
+      <button class="check" onclick="showCheckInput()">Conferir Manual</button>
+      <button class="stats" onclick="showStats()">Estatísticas</button>
+      <button class="suggest" onclick="suggestNumbers()">Sugerir 70 Números</button>
+      <button class="dark-mode-toggle" onclick="toggleDarkMode()">Modo Escuro</button>
+    </div>
+
+    <div class="result" id="result"></div>
+    <div class="check-result" id="checkResultContainer"></div>
+    <div class="stats-result" id="statsContainer"></div>
+  </div>
+
+  <script>
+    const totalNumbers = 100;
+    const selectedNumbers = [];
+    let generatedGames = [];
+    let lastDrawNumbers = [];
+    let concursos = [
+      [3,9,12,17,19,22,23,25,35,36,50,51,53,57,67,69,72,78,89,94],
+      [10,13,28,43,46,47,49,53,58,61,69,71,74,76,78,80,83,90,96,98],
+      [2,11,13,29,33,41,52,53,57,61,62,63,75,79,83,84,87,94,96,0]
+    ];
+    let statsData = {
+      mostFrequent: [],
+      mostCommonPairs: []
+    };
+
+    function initializeConcursos() {
+      try {
+        const stored = localStorage.getItem('lotomaniaConcursos');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.every(arr => Array.isArray(arr) && arr.length === 20)) {
+            concursos = parsed;
+          } else {
+            console.warn('Dados de concursos inválidos, usando padrão.');
+            localStorage.setItem('lotomaniaConcursos', JSON.stringify(concursos));
+          }
+        } else {
+          localStorage.setItem('lotomaniaConcursos', JSON.stringify(concursos));
+        }
+      } catch (e) {
+        console.error('Erro ao carregar concursos do localStorage:', e);
+        localStorage.setItem('lotomaniaConcursos', JSON.stringify(concursos));
+      }
+    }
+
+    function normalizeNumber(num) {
+      return num === 100 ? 0 : num;
+    }
+
+    function formatNumber(num) {
+      return num === 0 ? '00' : num.toString().padStart(2, '0');
+    }
+
+    function getDezenasToRemove() {
+      if (!lastDrawNumbers || lastDrawNumbers.length !== 20) {
+        console.warn('Último sorteio inválido ou não disponível.');
+        return [];
+      }
+      try {
+        const dezenasToRemove = lastDrawNumbers.map(num => {
+          const result = 100 - normalizeNumber(num);
+          return result === 100 ? 0 : result;
+        });
+        console.log('Dezenas a remover:', dezenasToRemove.map(formatNumber));
+        return dezenasToRemove;
+      } catch (e) {
+        console.error('Erro ao calcular dezenas a remover:', e);
+        return [];
+      }
+    }
+
+    function updateRemovedDezenas() {
+      const removedDezenasDiv = document.getElementById('removedDezenas');
+      const dezenasToRemove = getDezenasToRemove();
+      if (dezenasToRemove.length > 0) {
+        removedDezenasDiv.textContent = `Dezenas sugeridas para evitar (100 - último sorteio): ${dezenasToRemove.map(formatNumber).join(', ')}`;
+      } else {
+        removedDezenasDiv.textContent = '';
+      }
+    }
+
+    function calculateStats() {
+      try {
+        const numberCounts = {};
+        concursos.forEach(draw => {
+          draw.forEach(num => {
+            num = normalizeNumber(num);
+            numberCounts[num] = (numberCounts[num] || 0) + 1;
+          });
+        });
+        statsData.mostFrequent = Object.entries(numberCounts)
+          .map(([number, frequency]) => ({ number: parseInt(number), frequency }))
+          .sort((a, b) => b.frequency - a.frequency || a.number - b.number)
+          .slice(0, 10);
+
+        const pairCounts = {};
+        concursos.forEach(draw => {
+          const numbers = draw.map(normalizeNumber).sort((a, b) => a - b);
+          for (let i = 0; i < numbers.length; i++) {
+            for (let j = i + 1; j < numbers.length; j++) {
+              const pair = [numbers[i], numbers[j]];
+              const pairKey = pair.join('-');
+              pairCounts[pairKey] = (pairCounts[pairKey] || 0) + 1;
+            }
+          }
+        });
+        statsData.mostCommonPairs = Object.entries(pairCounts)
+          .map(([pair, frequency]) => ({
+            pair: pair.split('-').map(Number),
+            frequency
+          }))
+          .sort((a, b) => b.frequency - a.frequency || a.pair[0] - b.pair[0])
+          .slice(0, 5);
+      } catch (e) {
+        console.error('Erro ao calcular estatísticas:', e);
+      }
+    }
+
+    function createNumberGrid() {
+      const container = document.getElementById('dezenasContainer');
+      if (!container) {
+        console.error('Elemento dezenasContainer não encontrado!');
+        return;
+      }
+      container.innerHTML = '';
+      const dezenasToRemove = getDezenasToRemove();
+
+      try {
+        for (let i = 1; i <= 99; i++) {
+          const div = document.createElement('div');
+          div.className = 'dezena';
+          div.textContent = formatNumber(i);
+          if (dezenasToRemove.includes(i)) {
+            div.classList.add('highlight');
+            div.title = 'Sugerido para evitar (baseado no último sorteio)';
+          }
+          div.onclick = () => toggleSelection(div, i);
+          container.appendChild(div);
+        }
+
+        const div = document.createElement('div');
+        div.className = 'dezena';
+        div.textContent = '00';
+        if (dezenasToRemove.includes(0)) {
+          div.classList.add('highlight');
+          div.title = 'Sugerido para evitar (baseado no último sorteio)';
+        }
+        div.onclick = () => toggleSelection(div, 0);
+        container.appendChild(div);
+
+        console.log('Grade de dezenas criada com sucesso na ordem 01, 02, ..., 99, 00.');
+        updateRemovedDezenas();
+      } catch (e) {
+        console.error('Erro ao criar grade de dezenas:', e);
+      }
+    }
+
+    function toggleSelection(element, number) {
+      const numStr = formatNumber(number);
+      if (element.classList.contains('selected')) {
+        element.classList.remove('selected');
+        const index = selectedNumbers.indexOf(numStr);
+        if (index !== -1) selectedNumbers.splice(index, 1);
+      } else {
+        if (selectedNumbers.length < 70) {
+          element.classList.add('selected');
+          selectedNumbers.push(numStr);
+        } else {
+          alert('Você só pode selecionar até 70 números.');
+        }
+      }
+      document.getElementById('counter').textContent = selectedNumbers.length;
+    }
+
+    function resetSelection() {
+      try {
+        const dezenas = document.querySelectorAll('.dezena');
+        dezenas.forEach(dezena => dezena.classList.remove('selected'));
+        selectedNumbers.length = 0;
+        generatedGames.length = 0;
+        lastDrawNumbers = JSON.parse(localStorage.getItem('lotomaniaLastDraw')) || concursos[concursos.length - 1] || [];
+        document.getElementById('counter').textContent = '0';
+        document.getElementById('result').innerHTML = '';
+        document.getElementById('checkResultContainer').innerHTML = '';
+        document.getElementById('statsContainer').innerHTML = '';
+        createNumberGrid();
+      } catch (e) {
+        console.error('Erro ao resetar seleção:', e);
+      }
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function generateGames() {
+      if (selectedNumbers.length !== 70) {
+        alert(`Selecione exatamente 70 números (você selecionou ${selectedNumbers.length}).`);
+        return;
+      }
+      try {
+        const numbers = selectedNumbers.map(num => num === '00' ? 0 : parseInt(num));
+        const shuffledNumbers = shuffleArray([...numbers]);
+        generatedGames = [
+          shuffledNumbers.slice(0, 50).sort((a, b) => a - b),
+          shuffledNumbers.slice(5, 55).sort((a, b) => a - b),
+          shuffledNumbers.slice(10, 60).sort((a, b) => a - b),
+          shuffledNumbers.slice(15, 65).sort((a, b) => a - b)
+        ];
+        displayGames();
+      } catch (e) {
+        console.error('Erro ao gerar jogos:', e);
+      }
+    }
+
+    function analyzeGame(game) {
+      const stats = {
+        even: 0,
+        odd: 0,
+        multiples3: 0,
+        repeatedLast: 0
+      };
+      game.forEach(num => {
+        if (num % 2 === 0 || num === 0) stats.even++;
+        else stats.odd++;
+        if (num % 3 === 0) stats.multiples3++;
+        if (lastDrawNumbers.includes(num)) stats.repeatedLast++;
+      });
+      return stats;
+    }
+
+    function displayGames() {
+      const resultDiv = document.getElementById('result');
+      resultDiv.innerHTML = '<h2>Jogos Gerados</h2><div class="games"></div>';
+      const gamesContainer = resultDiv.querySelector('.games');
+      generatedGames.forEach((game, index) => {
+        const stats = analyzeGame(game);
+        const gameDiv = document.createElement('div');
+        gameDiv.className = 'game';
+        game.forEach(number => {
+          const numberDiv = document.createElement('div');
+          numberDiv.className = 'number';
+          numberDiv.textContent = formatNumber(number);
+          gameDiv.appendChild(numberDiv);
+        });
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'stats-details';
+        statsDiv.innerHTML = `
+          <span class="stat">Par: ${stats.even}</span>
+          <span class="stat">Ímpar: ${stats.odd}</span>
+          <span class="stat">Múltiplo-3: ${stats.multiples3}</span>
+          <span class="stat">Repetido Último: ${stats.repeatedLast}</span>
+        `;
+        gameDiv.appendChild(statsDiv);
+        gamesContainer.appendChild(gameDiv);
+      });
+    }
+
+    function exportGames() {
+      if (generatedGames.length === 0) {
+        alert("Nenhum jogo gerado para exportar.");
+        return;
+      }
+      const dezenasToRemove = getDezenasToRemove();
+      const content = generatedGames.map((game, index) => {
+        const stats = analyzeGame(game);
+        return `Jogo ${index + 1}: ${game.map(n => formatNumber(n)).join(", ")}\n` +
+               `Par: ${stats.even}, Ímpar: ${stats.odd}, Múltiplo-3: ${stats.multiples3}, ` +
+               `Repetido Último: ${stats.repeatedLast}\n` +
+               (dezenasToRemove.length > 0 ? `Dezenas Sugeridas para Evitar: ${dezenasToRemove.map(formatNumber).join(", ")}\n` : '');
+      }).join("\n");
+      const blob = new Blob([content], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "jogos_lotomania.txt";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportGamesToCSV() {
+      if (generatedGames.length === 0) {
+        alert("Nenhum jogo gerado para exportar.");
+        return;
+      }
+      const headers = ['Jogo', 'Números', 'Par', 'Ímpar', 'Múltiplo-3', 'Repetido Último', 'Dezenas Sugeridas para Evitar'];
+      const dezenasToRemove = getDezenasToRemove();
+      const rows = generatedGames.map((game, index) => {
+        const stats = analyzeGame(game);
+        return [
+          index + 1,
+          game.map(n => formatNumber(n)).join(','),
+          stats.even,
+          stats.odd,
+          stats.multiples3,
+          stats.repeatedLast,
+          dezenasToRemove.map(formatNumber).join(',')
+        ].join(',');
+      });
+      const csv = [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'jogos_lotmania.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showCheckInput() {
+      const checkContainer = document.getElementById('checkResultContainer');
+      const cachedLastDraw = localStorage.getItem('lotomaniaLastDraw');
+      const inputValue = cachedLastDraw ? JSON.parse(cachedLastDraw).map(n => formatNumber(n)).join(',') : '';
+      checkContainer.innerHTML = `
+        <div class="check-input-container">
+          <input type="text" class="check-input" id="lastDrawInput" placeholder="Concurso atual: 20 dezenas (ex.: 00,01,02,...)" value="${inputValue}">
+          <button class="check-button" onclick="checkResults()">Conferir</button>
+        </div>
+      `;
+      document.getElementById('lastDrawInput').focus();
+    }
+
+    function validateDrawInput(input) {
+      if (!input) return false;
+      const numbers = input.split(',').map(num => {
+        num = num.trim();
+        if (num === '0' || num === '00' || num === '100') return 0;
+        return parseInt(num);
+      }).filter(num => !isNaN(num));
+      if (numbers.length !== 20) return false;
+      if (numbers.some(num => num < 0 || num > 99)) return false;
+      if (new Set(numbers).size !== 20) return false;
+      return numbers;
+    }
+
+    function checkResults() {
+      const lastDrawInput = document.getElementById('lastDrawInput')?.value.trim() || '';
+      const checkContainer = document.getElementById('checkResultContainer');
+
+      lastDrawNumbers = validateDrawInput(lastDrawInput);
+      if (!lastDrawNumbers) {
+        alert('Digite 20 números válidos para o concurso atual (ex.: 00,01,02,...).');
+        return;
+      }
+
+      try {
+        concursos.push(lastDrawNumbers);
+        if (concursos.length > 100) concursos.shift();
+        calculateStats();
+        localStorage.setItem('lotomaniaConcursos', JSON.stringify(concursos));
+        localStorage.setItem('lotomaniaLastDraw', JSON.stringify(lastDrawNumbers));
+        localStorage.setItem('lotomaniaLastUpdate', new Date().toISOString());
+        createNumberGrid();
+        resetSelection();
+      } catch (e) {
+        console.error('Erro ao salvar no localStorage:', e);
+      }
+
+      if (generatedGames.length === 0) {
+        checkContainer.innerHTML = '<p>Gere jogos antes de conferir resultados.</p>';
+        return;
+      }
+
+      checkContainer.innerHTML = `
+        <h2>Resultados da Conferência</h2>
+        <button class="export" onclick="exportCheckResults()">Exportar Conferência</button>
+        <div class="check-games"></div>
+      `;
+      const gamesContainer = checkContainer.querySelector('.check-games');
+
+      generatedGames.forEach((game, index) => {
+        const matches = game.filter(num => lastDrawNumbers.includes(num)).length;
+        const gameDiv = document.createElement('div');
+        gameDiv.className = 'check-game';
+        game.forEach(number => {
+          const numberDiv = document.createElement('div');
+          numberDiv.className = 'number';
+          numberDiv.textContent = formatNumber(number);
+          if (lastDrawNumbers.includes(number)) {
+            numberDiv.classList.add('match');
+          }
+          gameDiv.appendChild(numberDiv);
+        });
+        const pointsDiv = document.createElement('div');
+        pointsDiv.className = 'points';
+        pointsDiv.textContent = `${matches} acertos`;
+        gameDiv.appendChild(pointsDiv);
+        gamesContainer.appendChild(gameDiv);
+      });
+    }
+
+    function exportCheckResults() {
+      const checkGames = document.querySelectorAll('.check-game');
+      if (checkGames.length === 0) {
+        alert('Conferência não realizada.');
+        return;
+      }
+      const content = Array.from(checkGames).map((game, index) => {
+        const numbers = Array.from(game.querySelectorAll('.number')).map(n => n.textContent).join(', ');
+        const points = game.querySelector('.points').textContent;
+        return `Jogo ${index + 1}: ${numbers}\n${points}\n`;
+      }).join('\n');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'conferencia_lotomania.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function suggestNumbers() {
+      resetSelection();
+      const dezenasToRemove = getDezenasToRemove();
+      const allNumbers = Array.from({ length: 100 }, (_, i) => formatNumber(i))
+        .filter(num => !dezenasToRemove.includes(num === '00' ? 0 : parseInt(num)));
+      if (allNumbers.length < 70) {
+        alert('Não há números suficientes para sugerir 70 dezenas após a remoção.');
+        return;
+      }
+      const shuffled = shuffleArray([...allNumbers]);
+      const suggested = shuffled.slice(0, 70);
+      const dezenas = document.querySelectorAll('.dezena');
+      suggested.forEach(num => {
+        const index = num === '00' ? 0 : parseInt(num);
+        if (dezenas[index]) {
+          dezenas[index].classList.add('selected');
+          selectedNumbers.push(num);
+        }
+      });
+      document.getElementById('counter').textContent = selectedNumbers.length;
+    }
+
+    function showStats() {
+      const container = document.getElementById('statsContainer');
+      container.innerHTML = '<h2>Estatísticas dos Últimos 100 Concursos</h2>';
+
+      container.innerHTML += '<h3>Top 10 Dezenas Mais Sorteadas</h3>';
+      let table = '<table class="stats-table"><tr><th>Dezena</th><th>Frequência</th></tr>';
+      statsData.mostFrequent.forEach(item => {
+        table += `<tr><td>${formatNumber(item.number)}</td><td>${item.frequency}</td></tr>`;
+      });
+      table += '</table>';
+      container.innerHTML += table;
+
+      container.innerHTML += '<h3>Top 5 Pares Mais Frequentes</h3>';
+      table = '<table class="stats-table"><tr><th>Par</th><th>Frequência</th></tr>';
+      statsData.mostCommonPairs.forEach(item => {
+        table += `<tr><td>${item.pair.map(n => formatNumber(n)).join('-')}</td><td>${item.frequency}</td></tr>`;
+      });
+      table += '</table>';
+      container.innerHTML += table;
+
+      container.innerHTML += '<p><small>Fonte: Dados baseados nos últimos 100 concursos da Lotomania armazenados localmente.</small></p>';
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      localStorage.setItem('lotomaniaDarkMode', isDark);
+      document.querySelector('.dark-mode-toggle').textContent = isDark ? 'Modo Claro' : 'Modo Escuro';
+    }
+
+    window.onload = () => {
+      console.log('Iniciando carregamento da página.');
+      try {
+        createNumberGrid();
+        initializeConcursos();
+        calculateStats();
+        lastDrawNumbers = JSON.parse(localStorage.getItem('lotomaniaLastDraw')) || concursos[concursos.length - 1] || [];
+        if (localStorage.getItem('lotomaniaDarkMode') === 'true') {
+          document.body.classList.add('dark-mode');
+          document.querySelector('.dark-mode-toggle').textContent = 'Modo Claro';
+        }
+      } catch (e) {
+        console.error('Erro no carregamento inicial:', e);
+        createNumberGrid();
+      }
+    };
+  </script>
+</body>
+</html>
